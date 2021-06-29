@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import *
 import pygame.gfxdraw
 import time
+import random
 
 size = 20
 
@@ -11,9 +12,13 @@ class Apple:
         self.x = size * 4
         self.y = size * 4
     def draw(self):
-        pygame.gfxdraw.filled_circle(self.parent_screen, self.x, self.y, 7, [207, 4, 4])
+        pygame.gfxdraw.box(self.parent_screen, [self.x, self.y, 18, 18], [207, 4, 4])
         pygame.display.flip()
 
+    def move(self):
+
+        self.x = random.randint(1,25)*size
+        self.y = random.randint(1, 25) * size
 # Cấu hình cho con rắn
 class Snake:
     def __init__(self, parent_screen, length):
@@ -32,6 +37,11 @@ class Snake:
              pygame.gfxdraw.rectangle(self.parent_screen, [self.x[i], self.y[i], 18, 18], [115, 15, 111])
         # Cập nhật hay hiển thị lên màn hình
         pygame.display.flip()
+
+    def increase_length(self):
+        self.length +=1
+        self.x.append(1)
+        self.y.append(1)
 
     # Các hàm dưới này để định nghĩa đường đi cho con rắn
     def move_left(self):
@@ -66,15 +76,30 @@ class Game:
         pygame.display.set_caption("Game Snake")
         self.surface = pygame.display.set_mode((500, 500))
         self.surface.fill((91, 162, 179))
-        self.snake = Snake(self.surface,7)
+        self.snake = Snake(self.surface,1)
         self.snake.draw()
         self.apple = Apple(self.surface)
         self.apple.draw()
 
+    def is_collision(self, x1, y1, x2, y2):
+        if x1 >= x2 and x1 < x2 + size:
+            if y1 >= y2 and y1 < y2 + size:
+                return True
+
     def play(self):
         self.snake.walk()
         self.apple.draw()
+        self.display_scope()
+        pygame.display.flip()
 
+        if self.is_collision(self.snake.x[0], self.snake.y[0], self.apple.x, self.apple.y):
+            self.snake.increase_length()
+            self.apple.move()
+
+    def display_scope(self):
+        font = pygame.font.SysFont('arial',20)
+        score = font.render(f"Score : {self.snake.length}",True,(235, 219, 52))
+        self.surface.blit(score,(400,10))
     def run(self):
         running = True
         while running:
