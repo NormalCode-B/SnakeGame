@@ -4,6 +4,7 @@ import pygame.gfxdraw
 import time
 import random
 
+
 size = 20
 
 class Apple:
@@ -32,9 +33,12 @@ class Snake:
     def draw(self):
         # Màu của màn hình
         self.parent_screen.fill((91, 162, 179))
+
         for i in range(self.length):
             # Hình dạng hộp con rắn
              pygame.gfxdraw.rectangle(self.parent_screen, [self.x[i], self.y[i], 18, 18], [115, 15, 111])
+
+
         # Cập nhật hay hiển thị lên màn hình
         pygame.display.flip()
 
@@ -42,6 +46,7 @@ class Snake:
         self.length +=1
         self.x.append(1)
         self.y.append(1)
+
 
     # Các hàm dưới này để định nghĩa đường đi cho con rắn
     def move_left(self):
@@ -73,13 +78,24 @@ class Snake:
 class Game:
     def __init__(self):
         pygame.init()
-        pygame.display.set_caption("Game Snake")
+        pygame.display.set_caption("Game Snake by B")
+        pygame.mixer.init()
+        self.background_music()
+
         self.surface = pygame.display.set_mode((500, 500))
         self.surface.fill((91, 162, 179))
         self.snake = Snake(self.surface,1)
         self.snake.draw()
         self.apple = Apple(self.surface)
         self.apple.draw()
+
+    def background_music(self):
+        pygame.mixer.music.load("Sound/Background Music_256kbps.mp3")
+        pygame.mixer.music.play(-1,0.5)
+
+    def play_sound(self,s_name):
+        sound = pygame.mixer.Sound(f"Sound/{s_name}.mp3")
+        pygame.mixer.Sound.play(sound)
 
     def is_collision(self, x1, y1, x2, y2):
         if x1 >= x2 and x1 < x2 + size:
@@ -95,12 +111,15 @@ class Game:
 
         # Coding cho apple
         if self.is_collision(self.snake.x[0], self.snake.y[0], self.apple.x, self.apple.y):
+
+            # self.play_sound("Ding")
             self.snake.increase_length()
             self.apple.move()
 
         # Coding cho snake
         for i in range(3,self.snake.length):
             if self.is_collision(self.snake.x[0], self.snake.y[0], self.snake.x[i], self.snake.y[i]):
+                self.play_sound("game-lose")
                 raise "Pause"
 
     def display_scope(self):
@@ -115,6 +134,7 @@ class Game:
         self.surface.blit(line1,(100,200))
         line2 = font.render("To play again press Enter ", True, (235, 219, 52))
         self.surface.blit(line2, (100, 230))
+        pygame.mixer.music.pause()
         pygame.display.flip()
 
     def reset(self):
@@ -130,7 +150,9 @@ class Game:
                     if event.key == K_ESCAPE:
                         running = False
                     if event.key == K_RETURN:
+                        pygame.mixer.music.unpause()
                         pause = False
+
                     if not pause:
                         if event.key == K_UP:
                             self.snake.move_up()
